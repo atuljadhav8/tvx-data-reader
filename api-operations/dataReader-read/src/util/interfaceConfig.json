@@ -1,0 +1,62 @@
+{
+	"s3Object": {
+		"domain": "Finance",
+		"interfaceName": "FXRates",
+		"jobName": "FXRates",
+		"fileName": "codausd280816.csv",
+		"size": 32,
+		"bucketName": "tvx-middleware-dev",
+		"awsRegion": "eu-west-1"
+	},
+	"interfaceConfig": {
+		"name": "FXRates",
+		"source": {
+			"resource": "s3",
+			"type": "file",
+			"file": {
+				"format": "delimited",
+				"delimited": {
+					"headerExist": false,
+					"trailerExist": false,
+					"fieldDelimiter": ",",
+					"fieldQuoteEscape": "\\",
+					"recordDelimiter": "\r\n",
+					"schemaFileName": "FXRates_schema.json"
+				}
+			},
+			"trigger": {
+				"cronExpression": "***1*5"
+			}
+		},
+		"s3": {
+			"inputObjectKey": "interfaces/input/Finance/FxRates/jo_CODA_0000_controlJobFXRATESFile/",
+			"archiveObjectKey": "interfaces/archive/Finance/FxRates/jo_CODA_0000_controlJobFXRATESFile/",
+			"blockSize": 4
+		},
+		"preProcessors": {
+			"required": true,
+			"rules": [
+				"preprocessor-1.js",
+				"preprocessor-2.js"
+			]
+		},
+		"processors": {
+			"businessValidators": {
+				"required": true,
+				"type": "simple",
+				"simple": [
+					"jo_CODA_0000_controlJobFXRATESFile-validator1.js",
+					"jo_CODA_0000_controlJobFXRATESFile-validator2.js"
+				]
+			},
+			"transformers": {
+				"required": true,
+				"type": "simple",
+				"simple": [
+					"jo_CODA_0000_controlJobFXRATESFile-transformer1.js",
+					"jo_CODA_0000_controlJobFXRATESFile-transformer2.js"
+				]
+			}
+		}
+	}
+}

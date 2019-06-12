@@ -1,0 +1,266 @@
+{
+    "body": {
+        "fields": [
+            {
+                "name": "journalReference",
+                "title": "journalReference",
+                "constraints": {
+                    "required": true,
+                    "type": "string",
+                    "pattern": "[a-zA-Z]*",
+                    "nullable": true,
+                    "minLength": 1,
+                    "maxLength": 10,
+                    "unique": false
+                }
+            },
+            {
+                "name": "journalAccountCompany",
+                "title": "journalAccountCompany",
+                "constraints": {
+                    "required": true,
+                    "type": "string",
+                    "pattern": "[a-zA-Z]*",
+                    "nullable": true,
+                    "minLength": 1,
+                    "maxLength": 8,
+                    "unique": false
+                }
+            },
+            {
+                "name": "accountingPeriodCode",
+                "title": "accountingPeriodCode",
+                "constraints": {
+                    "required": true,
+                    "type": "integer",
+                    "pattern": "^\\d{1,6}",
+                    "nullable": true,
+                    "minLength": 1,
+                    "maxLength": 6,
+                    "unique": false
+                }
+            },
+            {
+                "name": "originalCurrency",
+                "title": "originalCurrency",
+                "constraints": {
+                    "required": true,
+                    "type": "string",
+                    "pattern": "[A-Z]*",
+                    "nullable": true,
+                    "minLength": 3,
+                    "maxLength": 3,
+                    "unique": false
+                }
+            },
+            {
+                "name": "eventDate",
+                "title": "eventDate",
+                "constraints": {
+                    "required": true,
+                    "type": "date",
+                    "pattern": "[a-zA-Z]*",
+                    "nullable": true,
+                    "minLength": 3,
+                    "maxLength": 3,
+                    "unique": false
+                }
+            },
+            {
+                "name": "GLAccountName",
+                "title": "GLAccountName",
+                "constraints": {
+                    "required": true,
+                    "type": "string",
+                    "pattern": "[a-zA-Z]*",
+                    "nullable": true,
+                    "minLength": 3,
+                    "maxLength": 64,
+                    "unique": false
+                }
+            },
+            {
+                "name": "postedAmount",
+                "title": "postedAmount",
+                "constraints": {
+                    "required": true,
+                    "type": "decimal",
+                    "pattern": "^(\\d{1,18}|(\\d{1,18}\\.{1}\\d{1,2}){1})$",
+                    "nullable": true,
+                    "minLength": 3,
+                    "maxLength": 21,
+                    "unique": false
+                }
+            },
+            {
+                "name": "ledgerAccountCurrencyCode",
+                "title": "ledgerAccountCurrencyCode",
+                "constraints": {
+                    "required": true,
+                    "type": "string",
+                    "pattern": "[A-Z]*",
+                    "nullable": true,
+                    "minLength": 3,
+                    "maxLength": 3,
+                    "unique": false
+                }
+            },
+            {
+                "name": "accountFXRate",
+                "title": "accountFXRate",
+                "constraints": {
+                    "required": true,
+                    "type": "decimal",
+                    "pattern": "^(\\d{1,18}|(\\d{1,18}\\.{1}\\d{1,8}){1})",
+                    "nullable": true,
+                    "minLength": 3,
+                    "maxLength": 18,
+                    "unique": false
+                }
+            },
+            {
+                "name": "accountAmount",
+                "title": "accountAmount",
+                "constraints": {
+                    "required": true,
+                    "type": "decimal",
+                    "pattern": "^(\\d{1,18}|(\\d{1,18}\\.{1}\\d{1,2}){1})$",
+                    "nullable": true,
+                    "minLength": 3,
+                    "maxLength": 21,
+                    "unique": false
+                }
+            },
+            {
+                "name": "overallAccountingCurrency",
+                "title": "overallAccountingCurrency",
+                "constraints": {
+                    "required": true,
+                    "type": "string",
+                    "pattern": "[a-zA-Z]*",
+                    "nullable": true,
+                    "minLength": 3,
+                    "maxLength": 3,
+                    "unique": false
+                }
+            },
+            {
+                "name": "overallFXRate",
+                "title": "overallFXRate",
+                "constraints": {
+                    "required": true,
+                    "type": "decimal",
+                    "pattern": "^(\\d{1,18}|(\\d{1,18}\\.{1}\\d{1,8}){1})",
+                    "nullable": true,
+                    "minLength": 3,
+                    "maxLength": 18,
+                    "unique": false
+                }
+            },
+            {
+                "name": "overallAmount",
+                "title": "overallAmount",
+                "constraints": {
+                    "required": true,
+                    "type": "decimal",
+                    "pattern": "^(\\d{1,18}|(\\d{1,18}\\.{1}\\d{1,2}){1})$",
+                    "nullable": true,
+                    "minLength": 3,
+                    "maxLength": 21,
+                    "unique": false
+                }
+            },
+            {
+                "name": "debitCreditFlag",
+                "title": "debitCreditFlag",
+                "constraints": {
+                    "required": true,
+                    "type": "string",
+                    "pattern": "[a-zA-Z]*",
+                    "nullable": true,
+                    "minLength": 1,
+                    "maxLength": 1,
+                    "unique": false
+                }
+            },
+            {
+                "name": "transactionCounterparty",
+                "title": "transactionCounterparty",
+                "constraints": {
+                    "required": true,
+                    "type": "string",
+                    "pattern": "[a-zA-Z]*",
+                    "nullable": true,
+                    "minLength": 1,
+                    "maxLength": 8,
+                    "unique": false
+                }
+            },
+            {
+                "name": "transactionReference",
+                "title": "transactionReference",
+                "constraints": {
+                    "required": true,
+                    "type": "string",
+                    "pattern": "[a-zA-Z]*",
+                    "nullable": true,
+                    "minLength": 1,
+                    "maxLength": 10,
+                    "unique": false
+                }
+            },
+            {
+                "name": "bookCode",
+                "title": "bookCode",
+                "constraints": {
+                    "required": true,
+                    "type": "string",
+                    "pattern": "[a-zA-Z]*",
+                    "nullable": true,
+                    "minLength": 1,
+                    "maxLength": 8,
+                    "unique": false
+                }
+            },
+            {
+                "name": "postingAccountName",
+                "title": "postingAccountName",
+                "constraints": {
+                    "required": true,
+                    "type": "string",
+                    "pattern": "[a-zA-Z]*",
+                    "nullable": true,
+                    "minLength": 1,
+                    "maxLength": 20,
+                    "unique": false
+                }
+            },
+            {
+                "name": "ledgerAccountName",
+                "title": "ledgerAccountName",
+                "constraints": {
+                    "required": true,
+                    "type": "string",
+                    "pattern": "[a-zA-Z]*",
+                    "nullable": true,
+                    "minLength": 1,
+                    "maxLength": 64,
+                    "unique": false
+                }
+            },
+            {
+                "name": "MIDASreference",
+                "title": "MIDASreference",
+                "constraints": {
+                    "required": true,
+                    "type": "string",
+                    "pattern": "[a-zA-Z]*",
+                    "nullable": true,
+                    "minLength": 1,
+                    "maxLength": 12,
+                    "unique": false
+                }
+            }
+        ]
+    }
+}

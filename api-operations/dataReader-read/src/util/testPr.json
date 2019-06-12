@@ -1,0 +1,66 @@
+{
+    "jobDetail": {
+        "domain": "Finance",
+        "interfaceName": "FXRates",
+        "jobName": "FXRATES",
+        "fileName": "codausd280815.csv",
+        "sizeInKb": 32,
+        "bucketName": "tvx-middleware-dev",
+        "region": "eu-west-1"
+    },
+    "interfaceConfig": {
+        "name": "FXRATES",
+        "source": {
+            "resource": "s3",
+            "type": "file",
+            "file": {
+                "format": "delimited",
+                "delimited": {
+                    "headerExist": false,
+                    "trailerExist": false,
+                    "fieldDelimiter": ",",
+                    "fieldQuoteEscape": "\\",
+                    "recordDelimiter": "\n",
+                    "schemaFileName": "fxrates-schema.json"
+                }
+            },
+            "trigger": {
+                "cronExpression": "***1*5"
+            }
+        },
+        "s3": {
+            "inputObjectKey": "interfaces/coda/coda001/input/{input-file-name-pattern}",
+            "archiveObjectKey": "interfaces/coda/coda001/archive/{archive-file-name-pattern}",
+            "blockSize": 1000
+        },
+        "processors": {
+            "businessValidators": {
+                "required": true,
+                "type": "simple",
+                "simple": [
+                    "validator1.js",
+                    "validator2.js"
+                ]
+            },
+            "transformers": {
+                "required": true,
+                "type": "simple",
+                "simple": [
+                    "transformer1.js",
+                    "transformer2.js"
+                ]
+            }
+        },
+        "destination": {
+            "type": "api",
+            "api": {
+                "url": "https://middleware.travelex.net/coda-adapter/transaction",
+                "method": "post",
+                "contentType": "application/json",
+                "contentLength": 1000,
+                "characterEncoding": "utf-8"
+            }
+        }
+    },
+    "writer": "ARN"
+}

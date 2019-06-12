@@ -1,0 +1,21 @@
+  Resources:
+    ListDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      # Check what should be the policy, Retain or Delete
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: "id"
+            AttributeType: "S"   
+        KeySchema:
+          -
+            AttributeName: "id"
+            KeyType: "HASH"
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        StreamSpecification:
+          StreamViewType: "NEW_AND_OLD_IMAGES"
+        #TableName: "customers-dev"
+        TableName: ${self:custom.tableName}

@@ -1,0 +1,13 @@
+  read:
+    name: data-reader-${opt:stage, self:provider.stage}
+    handler: src/handlers/${self:provider.name}/read-dataReader-handler.handle
+    timeout: 300
+    package:
+      include:
+        - src/handlers/${self:provider.name}/read-dataReader-handler.js
+        - node_modules/data-reader/**
+    events:
+      - http:
+          path: read
+          method: post
+          cors: true

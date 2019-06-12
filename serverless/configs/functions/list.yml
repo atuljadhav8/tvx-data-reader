@@ -1,0 +1,13 @@
+  list:
+    name: list-dataReader-${opt:stage, self:provider.stage}
+    handler: src/handlers/${self:provider.name}/list-dataReader-handler.handle
+    timeout: 300
+    package:
+      include:
+        - src/handlers/${self:provider.name}/list-dataReader-handler.js
+        - node_modules/list/**
+    events:
+      - http:
+          path: list
+          method: post
+          cors: true

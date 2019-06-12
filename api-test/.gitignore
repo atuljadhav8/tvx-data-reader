@@ -1,0 +1,5 @@
+# package directories
+node_modules
+package-lock.json
+# test results
+test-results

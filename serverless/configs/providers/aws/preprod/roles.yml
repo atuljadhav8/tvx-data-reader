@@ -1,0 +1,11 @@
+#Use this section to add roles that cater to more than one functions, or else add it in its own function's yml file.
+
+#Example: 
+
+#Effect: Allow
+#Action:
+#  - dynamodb:Query
+#  - dynamodb:Scan
+#  - dynamodb:GetItem
+#  - dynamodb:PutItem
+#Resource: "*"

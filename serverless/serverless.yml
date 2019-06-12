@@ -1,0 +1,52 @@
+service: dataReader-api
+# package:
+#   individually: true
+#   exclude:
+#     - "**/*"
+
+plugins:
+#  - serverless-prune-plugin
+#  - serverless-aws-alias
+  - serverless-dynamodb-local
+  - serverless-offline
+  
+# frameworkVersion: "=X.X.X"
+custom:
+  stageNames:
+    dev: dev
+    sit: sit
+    uat: uat
+    preprod: preprod
+    prod: prod
+
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  stage: ${self:custom.stageNames.dev}
+  region: eu-west-1
+  stackName: sls-${self:service}-${opt:stage, self:provider.stage}-stack
+  apiName: DataReader-api
+  role: arn:aws:iam::820643439592:role/LambdaS3Execute
+#  deploymentBucket:
+#    name: sls-${self:service}-${opt:stage, self:provider.stage}
+#    serverSideEncryption: AES256
+
+  environment:
+    ${file(./configs/providers/${self:provider.name}/${opt:stage, self:provider.stage}/env.yml)}
+
+  # you can add statements to the Lambda function's IAM Role here
+  # iamRoleStatements:
+  #   - ${file(./configs/providers/${self:provider.name}/${opt:stage, self:provider.stage}/roles.yml)}
+
+functions:
+  
+  - ${file(./configs/functions/read.yml)}
+
+# you can add CloudFormation resource templates here
+# resources:
+  
+#   - ${file(./configs/resources/read-dynamoDb-table.yml)}
+#   - ${file(./configs/resources/list-dynamoDb-table.yml)}
+
+

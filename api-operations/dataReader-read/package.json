@@ -1,0 +1,25 @@
+{
+    "name": "data-reader",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "mocha ./unit-test/*.js "
+    },
+    "dependencies": {
+        "aws-sdk": "^2.463.0",
+        "chai-string": "^1.5.0",
+        "csvtojson": "^2.0.8",
+        "generic-exception": "git+https://github.com/MukeshTravelex/generic-exception.git",
+        "jsonpath": "^1.0.1",
+        "schema-validator": "git+https://github.com/siddhirajpantojitravelex/schema-validator.git",
+        "uuid": "^3.3.2",
+        "winston-wrapper": "git+https://github.com/siddhirajpantoji/testLogger.git"
+    },
+    "license": "ISC",
+    "devDependencies": {
+        "mocha": "^6.0.2",
+        "mochawesome": "^3.1.1"
+    },
+    "author": "Atul Jadhav"
+}

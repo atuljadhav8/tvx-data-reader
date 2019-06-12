@@ -1,0 +1,56 @@
+{
+    "jobDetail": {
+        "domain": "finance",
+        "interfaceName": "fx-rates",
+        "jobName": "fx-rates", 
+        "fileName": "testing_job2.csv",
+        "sizeInKb": 32,
+        "bucketName": "tvx-middleware-dev",
+        "region": "eu-west-1"
+    },
+    "interfaceConfig": {
+        "name": "FXRates", 
+        "domain": "finance",
+        "source": {
+            "resource": "s3",
+            "type": "file",
+            "file": {
+                "format": "delimited",
+                "delimited": {
+                    "headerExist": false,
+                    "trailerExist": false,
+                    "fieldDelimiter": ",",
+                    "fieldQuoteEscape": "\\",
+                    "recordDelimiter": "\r\n",
+                    "schemaFileName": "fx-rates-schema.json"
+                }
+            },
+            "trigger": {
+                "cronExpression": "***1*5"
+            }
+        },
+        "s3": {
+            "inputObjectKey": "interfaces/input/Finance/FxRates/jo_CODA_0000_controlJobFXRATESFile/",
+            "archiveObjectKey": "interfaces/archive/Finance/FxRates/jo_CODA_0000_controlJobFXRATESFile/",
+            "errorObjectKey": "interfaces/coda/error/finance/coda/coda001/{input-file-name-pattern}",
+            "blockSize": 4
+        },
+        "preProcessors": {
+            "required": true,
+            "rules": ["preprocessor-recordcount-rule.js", "preprocessor-2.js"]
+        },
+
+        "processors": {
+            "transformers": {
+                "required": true,
+                "type": "simple",
+                "simple": [
+                    "jo_CODA_0000_controlJobFXRATESFile-transformer1.js",
+                    "jo_CODA_0000_controlJobFXRATESFile-transformer2.js"
+                ]
+            }
+        },
+        "eventGenerator": "arn:aws:lambda:eu-west-1:820643439592:function:eventGenerator-dev",
+        "writer": "ARN"
+    }
+}

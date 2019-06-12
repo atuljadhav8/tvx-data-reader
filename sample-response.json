@@ -1,0 +1,45 @@
+{
+    "body": {
+        "dataProcessor": {
+            "name": "FXRates",
+            "domain": "finance",
+            "processors": {
+                "transformers": {
+                    "required": true,
+                    "type": "simple",
+                    "simple": [
+                        "jo_CODA_0000_controlJobFXRATESFile-transformer1.js",
+                        "jo_CODA_0000_controlJobFXRATESFile-transformer2.js"
+                    ]
+                }
+            },
+            "writer": "ARN"
+        },
+        "data": {
+            "Currency": "USD",
+            "Rate": 3.6724
+        }
+    },
+    "headers": {
+        "correlationId": "52c6ef32-5ca4-4f56-97b6-e81a07d254ab",
+        "traceFields": [
+            {
+                "name": "totalRecords",
+                "value": 10
+            },
+            {
+                "name": "recordNumber",
+                "value": 1
+            }
+        ],
+        "jobDetails": {
+            "domain": "finance",
+            "interfaceName": "fx-rates",
+            "jobName": "fx-rates",
+            "fileName": "codausd280818.csv",
+            "bucketName": "tvx-middleware-dev",
+            "region": "eu-west-1",
+            "country": ""
+        }
+    }
+}
