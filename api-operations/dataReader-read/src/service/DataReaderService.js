@@ -10,14 +10,14 @@ let transformerBo = require('../transformer/DataReaderTransformer');
 
 class DataReaderService {
 
-    async getFile(request, fileParams, totalRecordsParams, schemaParams,correlationid) {
+    async getFile(request, fileParams, totalRecordsParams, schemaParams, correlationid) {
         return new Promise(async (resolve, reject) => {
             let mySchema = await dataReaderDao.getschema(schemaParams);
             let eventStream = await dataReaderDao.getSelectedContent(fileParams);
             let totalRecordCountStream = await dataReaderDao.getTotalRecordCountStream(totalRecordsParams);
             let totalRecordCount = await this.totalRecordCountValue(totalRecordCountStream);
             try {
-                resolve(this.readStream(eventStream, request, mySchema, totalRecordCount,correlationid));
+                resolve(await this.readStream(eventStream, request, mySchema, totalRecordCount, correlationid));
             }
             catch (err) {
                 reject(err);
@@ -46,9 +46,9 @@ class DataReaderService {
         })
     }
 
-    async readStream(eventStream, request, mySchema, totalRecordCount,correlationid) {
+    async readStream(eventStream, request, mySchema, totalRecordCount, correlationid) {
         return new Promise(async (resolve, reject) => {
-            eventStream.on('data', (event) => {
+            eventStream.on('data', async (event) => {
                 try {
                     if (event.Records) {
                         // event.Records.Payload is a buffer containing
@@ -61,7 +61,7 @@ class DataReaderService {
                         console.log("Delimited Data:\n", csvfile);
                         //console.log("CSV File2: \n",csvarr);
                         //console.log("Converting each delimited row into JSON object!!!\n");
-                        resolve(this.csvToJson(csvarr, request, mySchema, totalRecordCount,correlationid));
+                        resolve(await this.csvToJson(csvarr, request, mySchema, totalRecordCount, correlationid));
                     }
                     else {
                         resolve("No records found!!");
@@ -83,7 +83,7 @@ class DataReaderService {
         })
     }
 
-    async csvToJson(csvarr, request, mySchema, totalRecordCount,correlationid) {
+    async csvToJson(csvarr, request, mySchema, totalRecordCount, correlationid) {
         return new Promise(async (resolve, reject) => {
             var vl = new schemaValidator(mySchema);
             if (jp.value(request.interfaceConfig, '$..headerExist')) {
@@ -96,7 +96,7 @@ class DataReaderService {
             csvarr.forEach(async (row, rowNumber) => {
                 let result = vl.validate(row.split(jp.value(request.interfaceConfig, '$..fieldDelimiter')));
                 if (result.isValid) {
-                //if (true) {
+                    //if (true) {
                     csv({
                         noheader: true,
                         headers: jp.query(mySchema.body, '$..name'),
@@ -107,7 +107,7 @@ class DataReaderService {
                         .then((jsonObj) => {
                             jsonObj.forEach(async (element, index) => {
                                 let jsonRow = JSON.stringify(element)
-                                let readerDto = new dataReaderDto(request, jsonRow, totalRecordCount, (rowNumber + 1),correlationid);
+                                let readerDto = new dataReaderDto(request, jsonRow, totalRecordCount, (rowNumber + 1), correlationid);
                                 let response = await transformerBo.transformToBo(readerDto.toJson());
                                 console.log("Response to next lambda: ", JSON.stringify(response));
                                 let lambdaParams = {
@@ -125,7 +125,7 @@ class DataReaderService {
                 }
                 else {
                     console.log("Invalid row: ", result.reasons);
-                    resolve("Invalid row: " + row);
+                    reject("Invalid row: " + row);
                 }
             })
         })
