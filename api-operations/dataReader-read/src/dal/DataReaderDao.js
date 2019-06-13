@@ -13,7 +13,7 @@ class DataReaderDao {
             try {
                 s3.getObject(config, (err, fileContents) => {
                     if (err) { reject(err) }
-                    var fileContent = JSON.parse(fileContents.Body);
+                    let fileContent = JSON.parse(fileContents.Body);
                     resolve(fileContent);
                 })
             } catch (err) {
@@ -23,19 +23,28 @@ class DataReaderDao {
     }
     async getSelectedContent(fileParams) {
         return new Promise((resolve, reject) => {
-            s3.selectObjectContent(fileParams, (err, data) => {
-                if (err) { reject(err); }
-                resolve(data.Payload);
-            });
-        });
+            try {
+                s3.selectObjectContent(fileParams, (err, data) => {
+                    if (err) { reject(err); }
+                    resolve(data.Payload);
+                });
+            } catch (err) {
+                reject(err);
+            }
+        })
     }
     async getTotalRecordCountStream(totalRecordsParams) {
         return new Promise((resolve, reject) => {
-            s3.selectObjectContent(totalRecordsParams, (err, data) => {
-                if (err) { reject(err); }
-                resolve(data.Payload);
-            });
-        });
+            try {
+                s3.selectObjectContent(totalRecordsParams, (err, data) => {
+                    if (err) { reject(err); }
+                    resolve(data.Payload);
+                });
+            } catch (err) {
+                reject(err);
+            }
+        })
+
     }
 
     async invokeLambda(params) {

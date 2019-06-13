@@ -1,7 +1,7 @@
 {
     "body": {
         "dataProcessor": {
-            "name": "FXRates",
+            "name": "IT2TRS",
             "domain": "finance",
             "processors": {
                 "transformers": {
@@ -16,16 +16,34 @@
             "writer": "ARN"
         },
         "data": {
-            "Currency": "USD",
-            "Rate": 3.6724
+            "journalReference": "JL00333531",
+            "journalAccountCompany": "GBRET",
+            "accountingPeriodCode": 201709,
+            "originalCurrency": "USD",
+            "eventDate": "19/09/2017",
+            "GLAccountName": "159040#",
+            "postedAmount": -1000000,
+            "ledgerAccountCurrencyCode": "GBP",
+            "accountFXRate": 1.33,
+            "accountAmount": -751879.7,
+            "overallAccountingCurrency": "GBP",
+            "overallFXRate": 1,
+            "overallAmount": -751879.7,
+            "debitCreditFlag": "C",
+            "transactionCounterparty": "TREASURY",
+            "transactionReference": "FXS034723#",
+            "bookCode": "POST",
+            "postingAccountName": "Far dealt amount",
+            "ledgerAccountName": "ICO-UKRETAIL FX",
+            "MIDASreference": "ss"
         }
     },
     "headers": {
-        "correlationId": "6b8a6269-f7f3-46c0-b39e-1aa9077d0339",
+        "correlationId": "f4265d6d-2bf3-442a-a70c-15bd693a3e89",
         "traceFields": [
             {
                 "name": "totalRecords",
-                "value": 5
+                "value": 6
             },
             {
                 "name": "recordNumber",
@@ -33,10 +51,10 @@
             }
         ],
         "jobDetails": {
-            "domain": "Finance",
-            "interfaceName": "FXRates",
-            "jobName": "fx-rates",
-            "fileName": "codausd280815.csv",
+            "domain": "finance",
+            "interfaceName": "it2trs",
+            "jobName": "it2trs",
+            "fileName": "FRAMEWORK3_20170919.csv",
             "bucketName": "tvx-middleware-dev",
             "region": "eu-west-1",
             "country": ""
