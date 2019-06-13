@@ -41,7 +41,7 @@ class DataReaderTransformer {
             return dataReaderBo.toJson();
         }
         catch (err) {
-            reject(err);
+            throw err;
         }
     }
 }

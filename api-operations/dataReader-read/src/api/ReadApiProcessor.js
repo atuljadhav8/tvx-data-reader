@@ -3,7 +3,6 @@ const jp = require('jsonpath');
 //const GenericException = require('generic-exception').GenericException;
 const paramBo = require('../model/ParamBo');
 const service = require('../service/DataReaderService');
-let interfaceConfig = require('../../src/util/interfaceConfig');
 const winston = require('winston-wrapper')
 const logger = winston.getLogger('read-api-processor')
 class ReadApiProcessor {

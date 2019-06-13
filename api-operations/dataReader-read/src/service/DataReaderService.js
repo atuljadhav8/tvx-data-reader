@@ -30,12 +30,10 @@ class DataReaderService {
         return new Promise(async (resolve, reject) => {
             try {
                 totalRecordCount.on('data', (event) => {
-
                     if (event.Records)
                         resolve(event.Records.Payload.toString());
                     else
                         resolve(0);
-
                 });
                 totalRecordCount.on('error', (err) => {
                     reject(err);
@@ -62,9 +60,8 @@ class DataReaderService {
                             csvarr.pop();
 
                         console.log("Delimited Data:\n", csvfile);
-                        //console.log("CSV File2: \n",csvarr);
-                        //console.log("Converting each delimited row into JSON object!!!\n");
-                        resolve(this.csvToJson(csvarr, request, mySchema, totalRecordCount, correlationid));
+                        let response = this.csvToJson(csvarr, request, mySchema, totalRecordCount, correlationid);
+                        resolve(response);
                     }
                     else {
                         resolve("No records found!!");
@@ -77,7 +74,7 @@ class DataReaderService {
                 });
                 eventStream.on('end', () => {
                     // Finished receiving events from S3
-                    console.log("Done with data reading!!");
+                    //console.log("Done with data reading!!");
                 });
             }
             catch (err) {
@@ -97,7 +94,7 @@ class DataReaderService {
                 if (jp.value(request.interfaceConfig, '$..trailerExist')) {
                     totalRecordCount = totalRecordCount - 1;
                 }
-                //let invalidRowArr = [];
+                let invalidRowArr = [];
                 csvarr.forEach(async (row, rowNumber) => {
                     let result = vl.validate(row.split(jp.value(request.interfaceConfig, '$..fieldDelimiter')));
                     if (result.isValid) {
@@ -116,24 +113,26 @@ class DataReaderService {
                                     let response = await transformerBo.transformToBo(readerDto.toJson());
                                     console.log("Response to next lambda: ", JSON.stringify(response));
                                     let lambdaParams = {
-                                        FunctionName: "arn:aws:lambda:eu-west-1:820643439592:function:event-generator-dev",
-                                        InvocationType: 'Event',
+                                        FunctionName: process.env.EVENT_GENERATOR || 'arn:aws:lambda:eu-west-1:820643439592:function:event-generator-dev',
+                                        InvocationType: process.env.INVOCATION_TYPE || 'Event',
                                         LogType: "Tail",
                                         Payload: JSON.stringify(response)
                                     };
                                     //Invoking event-generator lambda
                                     const lamdaResult = await dataReaderDao.invokeLambda(lambdaParams);
                                     console.log("lamdaResult: ", lamdaResult);
-                                    resolve("Success");
                                 })
                             })
                     }
                     else {
-                        console.log("Invalid row: ", result.reasons);
-                        reject("Invalid row: " + row);
-                        //invalidRowArr.push();
+                        let invalidRowWithReason = row + " ==> " + JSON.stringify(result.reasons);
+                        invalidRowArr.push(invalidRowWithReason);
                     }
                 })
+                if (invalidRowArr.length === 0)
+                    resolve("All rows has been read successfully!");
+                else
+                    resolve(invalidRowArr);
             }
             catch (err) {
                 reject(err);

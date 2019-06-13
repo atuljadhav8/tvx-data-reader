@@ -2,6 +2,9 @@
     name: data-reader-${opt:stage, self:provider.stage}
     handler: src/handlers/${self:provider.name}/read-dataReader-handler.handle
     timeout: 300
+    environment:
+      EVENT_GENERATOR: arn:aws:lambda:eu-west-1:820643439592:function:event-generator-${opt:stage, self:provider.stage}
+      INVOCATION_TYPE: Event
     package:
       include:
         - src/handlers/${self:provider.name}/read-dataReader-handler.js
@@ -11,3 +14,5 @@
           path: read
           method: post
           cors: true
+
+

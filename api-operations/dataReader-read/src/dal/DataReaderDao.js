@@ -21,6 +21,7 @@ class DataReaderDao {
             }
         })
     }
+
     async getSelectedContent(fileParams) {
         return new Promise((resolve, reject) => {
             try {
@@ -33,6 +34,7 @@ class DataReaderDao {
             }
         })
     }
+
     async getTotalRecordCountStream(totalRecordsParams) {
         return new Promise((resolve, reject) => {
             try {
@@ -44,21 +46,20 @@ class DataReaderDao {
                 reject(err);
             }
         })
-
     }
 
     async invokeLambda(params) {
-        try {
-            return new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
+            try {
                 lambda.invoke(params, function (err, data) {
-                    if (err) { reject(err); }
-                    else { resolve(data); }
+                    if (err) reject(err);
+                    else resolve("event-generator lambda invoked ");
                 });
-            });
-        }
-        catch (ex) {
-            console.log('exception occured while calling event-generator lambda from DAO layer');
-        }
+            }
+            catch (ex) {
+                reject(ex);
+            }
+        });
     }
 }
 
