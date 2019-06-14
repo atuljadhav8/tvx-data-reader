@@ -5,11 +5,21 @@ chai.use(require('chai-string'));
 var expect = chai.expect;
 describe('Data Reader - Positive Unit test', function() {
     this.timeout(20000);
-    it('Should return message "Success." when testing the service with a valid json input', (done) => {
+    it.only('Should return message "Success." when testing the service with a valid json input', (done) => {
         let jsonData = {
-            "fileName":"codausd280815.csv",
+            "jobDetails": {
+                "domain": "finance",
+                "interfaceName": "fx-rates",
+                "jobName": "fx-rates", 
+                "fileName": "codausd280818.csv",
+                "sizeInKb": 32,
+                "bucketName": "tvx-middleware-dev",
+                "region": "eu-west-1"
+            },
+        
             "interfaceConfig": {
-                "name": "FXRates",
+                "name": "FXRates", 
+                "domain": "finance",
                 "source": {
                     "resource": "s3",
                     "type": "file",
@@ -21,7 +31,7 @@ describe('Data Reader - Positive Unit test', function() {
                             "fieldDelimiter": ",",
                             "fieldQuoteEscape": "\\",
                             "recordDelimiter": "\r\n",
-                            "schemaFileName": "FXRates_schema.json"
+                            "schemaFileName": "fx-rates-schema.json"
                         }
                     },
                     "trigger": {
@@ -31,17 +41,15 @@ describe('Data Reader - Positive Unit test', function() {
                 "s3": {
                     "inputObjectKey": "interfaces/input/Finance/FxRates/jo_CODA_0000_controlJobFXRATESFile/",
                     "archiveObjectKey": "interfaces/archive/Finance/FxRates/jo_CODA_0000_controlJobFXRATESFile/",
+                    "errorObjectKey": "interfaces/coda/error/finance/coda/coda001/{input-file-name-pattern}",
                     "blockSize": 5
                 },
+                "preProcessors": {
+                    "required": true,
+                    "rules": ["preprocessor-recordcount-rule.js", "preprocessor-2.js"]
+                },
+        
                 "processors": {
-                    "businessValidators": {
-                        "required": true,
-                        "type": "simple",
-                        "simple": [
-                            "jo_CODA_0000_controlJobFXRATESFile-validator1.js",
-                            "jo_CODA_0000_controlJobFXRATESFile-validator2.js"
-                        ]
-                    },
                     "transformers": {
                         "required": true,
                         "type": "simple",
@@ -51,12 +59,13 @@ describe('Data Reader - Positive Unit test', function() {
                         ]
                     }
                 }
-            }
-        }
-        ;
+                
+            },
+            "writer": "ARN"
+        };
         ApiProcessor.process(jsonData,null).then((body) => {
             console.log("Body: ", body)
-            assert.equal(body, 'Success');
+            assert.equal(body, 'All rows has been read successfully!');
             done();
         }).catch(error => {
             console.log("TCL: error", error);

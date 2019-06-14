@@ -1,23 +1,23 @@
 'use strict';
 
+//const GenericException = require('generic-exception').GenericException;
+const SchemaValidator = require('schema-validator');
 const jp = require('jsonpath');
 const csv = require('csvtojson');
-//const GenericException = require('generic-exception').GenericException;
-const dataReaderDto = require('../model/DataReaderDto');
 const dataReaderDao = require('../dal/DataReaderDao');
-let schemaValidator = require('schema-validator');
-let transformerBo = require('../transformer/DataReaderTransformer');
 
 class DataReaderService {
 
-    async getFile(request, fileParams, totalRecordsParams, schemaParams, correlationid) {
+    getFile(requestBo) {
         return new Promise(async (resolve, reject) => {
             try {
-                let mySchema = await dataReaderDao.getschema(schemaParams);
-                let eventStream = await dataReaderDao.getSelectedContent(fileParams);
-                let totalRecordCountStream = await dataReaderDao.getTotalRecordCountStream(totalRecordsParams);
+                let fileSchema = await this.getFileSchema(requestBo);
+                let eventStream = await this.getSelectedContent(requestBo);
+                let totalRecordCountStream = await this.getTotalRecordCountStream(requestBo);
                 let totalRecordCount = await this.totalRecordCountValue(totalRecordCountStream);
-                let response = await this.readStream(eventStream, request, mySchema, totalRecordCount, correlationid)
+                let fileContentArray = await this.readStream(eventStream, requestBo);
+                let validatedSchema = await this.validateRowSchema(fileContentArray, requestBo, fileSchema, totalRecordCount);
+                let response = await this.csvToJson(validatedSchema, requestBo, fileSchema, totalRecordCount);
                 resolve(response);
             }
             catch (err) {
@@ -26,16 +26,55 @@ class DataReaderService {
         })
     }
 
-    async totalRecordCountValue(totalRecordCount) {
+
+    /**
+     * 
+     * @param {*} requestBo 
+     * @description 
+     */
+    async getSelectedContent(requestBo) {
+        try {
+            requestBo.dataExpression = `SELECT * FROM s3Object limit ${requestBo.blockSize}`;
+            return await dataReaderDao.getSelectedContent(requestBo.selectParams);
+        } catch (ex) {
+            console.log(ex)
+            throw ex;
+        }
+    }
+
+    /**
+     * 
+     * @param {*} requestBo 
+     */
+    async getTotalRecordCountStream(requestBo) {
+        try {
+            requestBo.dataExpression = 'SELECT count(*) FROM s3Object';
+            return await dataReaderDao.getSelectedContent(requestBo.selectParams);
+        } catch (ex) {
+            console.log(ex)
+            throw ex;
+        }
+    }
+
+    async getFileSchema(requestBo) {
+        try {
+            return await dataReaderDao.getschema({ Bucket: requestBo.bucketName, Key: requestBo.schemaKey });
+        } catch (ex) {
+            console.log('Error while reading file', ex)
+            throw ex;
+        }
+    }
+
+    totalRecordCountValue(totalRecordCount) {
         return new Promise(async (resolve, reject) => {
             try {
-                totalRecordCount.on('data', (event) => {
+                totalRecordCount.on('data', event => {
                     if (event.Records)
                         resolve(event.Records.Payload.toString());
                     else
                         resolve(0);
                 });
-                totalRecordCount.on('error', (err) => {
+                totalRecordCount.on('error', err => {
                     reject(err);
                 });
                 totalRecordCount.on('end', () => {
@@ -47,21 +86,17 @@ class DataReaderService {
         })
     }
 
-    async readStream(eventStream, request, mySchema, totalRecordCount, correlationid) {
+    readStream(eventStream, requestBo) {
         return new Promise(async (resolve, reject) => {
             try {
                 eventStream.on('data', (event) => {
                     if (event.Records) {
                         // event.Records.Payload is a buffer containing
                         // a single record, partial records, or multiple records
-                        let csvfile = event.Records.Payload.toString();
-                        let csvarr = csvfile.split(jp.value(request.interfaceConfig, '$..recordDelimiter'));
-                        if (csvarr.length > jp.value(request.interfaceConfig, '$..blockSize'))
-                            csvarr.pop();
-
-                        console.log("Delimited Data:\n", csvfile);
-                        let response = this.csvToJson(csvarr, request, mySchema, totalRecordCount, correlationid);
-                        resolve(response);
+                        let fileContent = event.Records.Payload.toString().trim();
+                        let fileContentArray = fileContent.split(requestBo.recordDelimiter);
+                        console.log("Delimited Data:\n", fileContent);
+                        resolve(fileContentArray);
                     }
                     else {
                         resolve("No records found!!");
@@ -72,6 +107,7 @@ class DataReaderService {
                     // Check against specific error codes that need custom handling
                     reject(err);
                 });
+
                 eventStream.on('end', () => {
                     // Finished receiving events from S3
                     //console.log("Done with data reading!!");
@@ -83,56 +119,74 @@ class DataReaderService {
         })
     }
 
-    async csvToJson(csvarr, request, mySchema, totalRecordCount, correlationid) {
+    validateRowSchema(fileContentArray, requestBo, fileSchema) {
         return new Promise(async (resolve, reject) => {
             try {
-                var vl = new schemaValidator(mySchema);
-                if (jp.value(request.interfaceConfig, '$..headerExist')) {
-                    totalRecordCount = totalRecordCount - 1;
-                    csvarr.shift();
-                }
-                if (jp.value(request.interfaceConfig, '$..trailerExist')) {
-                    totalRecordCount = totalRecordCount - 1;
-                }
-                let invalidRowArr = [];
-                csvarr.forEach(async (row, rowNumber) => {
-                    let result = vl.validate(row.split(jp.value(request.interfaceConfig, '$..fieldDelimiter')));
-                    if (result.isValid) {
-                        //if (true) {
-                        csv({
-                            noheader: true,
-                            headers: jp.query(mySchema.body, '$..name'),
-                            delimiter: jp.value(request.interfaceConfig, '$..fieldDelimiter'),
-                            checkType: true
-                        })
-                            .fromString(row)
-                            .then((jsonObj) => {
-                                jsonObj.forEach(async (element, index) => {
-                                    let jsonRow = JSON.stringify(element)
-                                    let readerDto = new dataReaderDto(request, jsonRow, totalRecordCount, (rowNumber + 1), correlationid);
-                                    let response = await transformerBo.transformToBo(readerDto.toJson());
-                                    console.log("Response to next lambda: ", JSON.stringify(response));
-                                    let lambdaParams = {
-                                        FunctionName: process.env.EVENT_GENERATOR || 'arn:aws:lambda:eu-west-1:820643439592:function:event-generator-dev',
-                                        InvocationType: process.env.INVOCATION_TYPE || 'Event',
-                                        LogType: "Tail",
-                                        Payload: JSON.stringify(response)
-                                    };
-                                    //Invoking event-generator lambda
-                                    const lamdaResult = await dataReaderDao.invokeLambda(lambdaParams);
-                                    console.log("lamdaResult: ", lamdaResult);
-                                })
-                            })
+                var schemaValidator = new SchemaValidator(fileSchema);
+
+                if (requestBo.headerExist) fileContentArray.shift();
+
+                let response = { validRows: [], inValidRows: [] };
+
+                fileContentArray.forEach((row, rowNumber) => {
+                    let validationResult = schemaValidator.validate(row.split(requestBo.fieldDelimiter));
+                    rowNumber++;
+                    if (validationResult.isValid) {
+                        response.validRows.push({ data: row, rowNumber: rowNumber });
                     }
                     else {
-                        let invalidRowWithReason = row + " ==> " + JSON.stringify(result.reasons);
-                        invalidRowArr.push(invalidRowWithReason);
+                        response.inValidRows.push({ data: row, rowNumber: rowNumber, reason: validationResult.reasons });
                     }
                 })
-                if (invalidRowArr.length === 0)
+                resolve(response);
+            }
+            catch (err) {
+                reject(err);
+            }
+        })
+    }
+
+    async invokeEventGenerator(payload) {
+        try {
+            let params = {
+                FunctionName: process.env.EVENT_GENERATOR || 'arn:aws:lambda:eu-west-1:820643439592:function:event-generator-dev',
+                InvocationType: process.env.INVOCATION_TYPE || 'Event',
+                LogType: "Tail",
+                Payload: JSON.stringify(payload)
+            };
+            return await dataReaderDao.invokeLambda(params);
+        } catch (ex) {
+            console.log(ex);
+            throw ex;
+        }
+    }
+
+    csvToJson(validatedSchema, requestBo, fileSchema, totalRecordCount) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                requestBo.totalRecordCount = requestBo.headerExist ? totalRecordCount - 1 : totalRecordCount;
+                requestBo.totalRecordCount = requestBo.trailerExist ? requestBo.totalRecordCount - 1 : requestBo.totalRecordCount;
+
+                for (let i = 0; i < validatedSchema.validRows.length; i++) {
+                    csv({
+                        noheader: true,
+                        headers: jp.query(fileSchema.body, '$..name'),
+                        delimiter: requestBo.fieldDelimiter,
+                        checkType: true
+                    }).fromString(validatedSchema.validRows[i].data)
+                        .then(async jsonData => {
+
+                            requestBo.data = JSON.stringify(jsonData[0]);
+                            requestBo.rowNumber = validatedSchema.validRows[i].rowNumber;
+
+                            let lamdaResult = await this.invokeEventGenerator(requestBo.lambdaPayload);
+                            console.log("lamdaResult: ", lamdaResult);
+                        })
+                }
+                if (validatedSchema.inValidRows.length > 0) {
+                    resolve(`${validatedSchema.inValidRows.length} rows rejected out of ${requestBo.totalRecordCount}, details: ${JSON.stringify(validatedSchema.inValidRows)}`)
+                } else
                     resolve("All rows has been read successfully!");
-                else
-                    resolve(invalidRowArr);
             }
             catch (err) {
                 reject(err);

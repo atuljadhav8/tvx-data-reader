@@ -1,8 +1,6 @@
 'use strict';
 
-//const fs = require("fs");
 const AWS = require('aws-sdk');
-const csv = require('csvtojson');
 
 let s3 = new AWS.S3();
 let lambda = new AWS.Lambda({ apiVersion: '2015-03-31', region: "eu-west-1" });
@@ -22,23 +20,10 @@ class DataReaderDao {
         })
     }
 
-    async getSelectedContent(fileParams) {
+    async getSelectedContent(params) {
         return new Promise((resolve, reject) => {
             try {
-                s3.selectObjectContent(fileParams, (err, data) => {
-                    if (err) { reject(err); }
-                    resolve(data.Payload);
-                });
-            } catch (err) {
-                reject(err);
-            }
-        })
-    }
-
-    async getTotalRecordCountStream(totalRecordsParams) {
-        return new Promise((resolve, reject) => {
-            try {
-                s3.selectObjectContent(totalRecordsParams, (err, data) => {
+                s3.selectObjectContent(params, (err, data) => {
                     if (err) { reject(err); }
                     resolve(data.Payload);
                 });
